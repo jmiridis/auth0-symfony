@@ -6,10 +6,11 @@ namespace Auth0\Symfony\Controllers;
 
 use Auth0\SDK\Auth0;
 use Auth0\Symfony\Contracts\Controllers\AuthenticationControllerInterface;
-use Auth0\Symfony\Security\Authenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
+use Symfony\Component\Security\Http\Authenticator\Debug\TraceableAuthenticator;
 use Throwable;
 
 use function is_array;
@@ -18,9 +19,12 @@ use function is_string;
 final class AuthenticationController extends AbstractController implements AuthenticationControllerInterface
 {
     public function __construct(
-        private Authenticator $authenticator,
+        private AuthenticatorInterface $authenticator,
         private RouterInterface $router,
     ) {
+        if ($authenticator instanceof TraceableAuthenticator) {
+            $this->authenticator = $authenticator->getAuthenticator();
+        }
     }
 
     /**
